@@ -1,28 +1,46 @@
 %{
-
-#include <stdio.h>
-#include <string.h>
 #include "papu-parser.tab.h"
-void showError();
+#include <string.h> // Necesario para strdup
+
+int yylineno = 1; // Definimos yylineno aquí
 %}
 
-
-numbers     ([0-9])+
-alpha       ([a-zA-Z])+
-
 %%
-
-{alpha}			   {sscanf(yytext, "%s", yylval.name); return (STRING);}
-{numbers}      {yylval.number = atoi(yytext); return (NUM);}
-";"      		   {return (SEMICOLON);}
-.      		     {showError(); return(OTHER);}
-
-%%
-
-
-void showError(){
-    printf("Other input");
+[0-9]+      {
+    yylval.num = atoi(yytext);
+    printf("TOKEN: NUMBER(%d)\n", yylval.num);
+    return NUMBER;
 }
-int yywrap(){
+[a-zA-Z]+   {
+    yylval.id = strdup(yytext);
+    printf("TOKEN: IDENTIFIER(%s)\n", yylval.id);
+    return IDENTIFIER;
+}
+\+          {
+    printf("TOKEN: PLUS\n");
+    return PLUS;
+}
+\-          {
+    printf("TOKEN: MINUS\n");
+    return MINUS;
+}
+\*          {
+    printf("TOKEN: MULTIPLY\n");
+    return MULTIPLY;
+}
+\/          {
+    printf("TOKEN: DIVIDE\n");
+    return DIVIDE;
+}
+\n          {
+    yylineno++;
+    printf("TOKEN: NEWLINE\n");
+    return '\n';
+}
+[ \t]+      { /* Ignora espacios y tabulaciones */ }
+.           { /* Ignora caracteres no reconocidos */ }
+%%
+
+int yywrap() {
     return 1;
 }
