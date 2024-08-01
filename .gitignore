@@ -3,4 +3,5 @@ lex.yy.c
 parser.output
 parser.tab.c
 parser.tab.h
-.vscode
+/.vscode
+/.idea
