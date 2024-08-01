@@ -84,8 +84,33 @@ void yyerror(const char *s) {
 }
 
 int main() {
-    yydebug = 1;  // Enable debugging
-    yyparse();
+printf(" --------------------------------------\n");
+    printf("|   Bienvenido al Papu Compilador     |\n");
+    printf("| Hecho por los Papus para los Papus  |\n");
+    printf(" --------------------------------------\n");
+
+    char filename[1024];
+    printf("Ingrese el nombre del archivo de entrada (ejemplo: input.papu): ");
+    fgets(filename, sizeof(filename), stdin);
+    filename[strcspn(filename, "\n")] = 0;  // Remover el salto de línea al final del nombre del archivo
+
+    FILE *file = fopen(filename, "r");
+    if (!file) {
+        perror("Error al abrir el archivo");
+        return 1;
+    }
+
+    extern FILE *yyin;
+    yyin = file;
+
+    if (!yyparse()) {
+        printf("Parsing completed successfully.\n");
+    } else {
+        printf("Parsing failed.\n");
+    }
+
+    fclose(file);
+
     return 0;
 }
 
