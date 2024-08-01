@@ -1,6 +1,7 @@
-
 App.exe
 lex.yy.c
-papu-parser.output
-papu-parser.tab.c
-papu-parser.tab.h
+parser.output
+parser.tab.c
+parser.tab.h
+/.vscode
+/.idea
