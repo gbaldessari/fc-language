@@ -3,45 +3,24 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_FUNCTIONS 100
-
 void yyerror(const char *s);
-int yylex(void);
+int yylex();
+int yyparse();
+int yydebug = 1;  // Enable debugging
 
-typedef int (*func_ptr)(int);
-
+// Estructura para almacenar variables
 typedef struct {
     char *name;
-    func_ptr func;
-} function_t;
+    int value;
+} variable;
 
-function_t functions[MAX_FUNCTIONS];
-int func_count = 0;
+#define MAX_VARS 100
+variable vars[MAX_VARS];
+int num_vars = 0;
 
-int call_function(char *name, int arg) {
-    for (int i = 0; i < func_count; i++) {
-        if (strcmp(functions[i].name, name) == 0) {
-            return functions[i].func(arg);
-        }
-    }
-    fprintf(stderr, "Function %s not defined\n", name);
-    return 0;
-}
-
-int fibonacci(int n) {
-    if (n <= 1) return n;
-    return fibonacci(n-1) + fibonacci(n-2);
-}
-
-void add_function(char *name, func_ptr func) {
-    if (func_count < MAX_FUNCTIONS) {
-        functions[func_count].name = name;
-        functions[func_count].func = func;
-        func_count++;
-    } else {
-        fprintf(stderr, "Function limit reached\n");
-    }
-}
+// Funciones para manejar variables
+int get_var_value(const char *name);
+void set_var_value(const char *name, int value);
 
 %}
 
@@ -51,55 +30,113 @@ void add_function(char *name, func_ptr func) {
 }
 
 %token <num> NUMBER
-%token IF ELSE WHILE PRINT FUNCTION RETURN
+%token PLUS MINUS MULT DIV
+%token LPAREN RPAREN SEMICOLON
+%token PRINT
 %token <str> IDENTIFIER
-%token PLUS MINUS TIMES DIVIDE ASSIGN
-%token LPAREN RPAREN LBRACE RBRACE EOL
+%type <num> expression
 
 %left PLUS MINUS
-%left TIMES DIVIDE
-%nonassoc IFX
-%nonassoc ELSE
-
-%type <num> expr
-%type <str> identifier
+%left MULT DIV
 
 %%
 
 program:
-    program statement
-    | /* empty */
+    lines
     ;
 
-statement:
-    expr EOL { printf("Resultado: %d\n", $1); }
-    | PRINT expr EOL { printf("Resultado: %d\n", $2); }
-    | IF LPAREN expr RPAREN statement %prec IFX
-    | IF LPAREN expr RPAREN statement ELSE statement
-    | WHILE LPAREN expr RPAREN statement
-    | LBRACE program RBRACE
-    | FUNCTION identifier LPAREN identifier RPAREN LBRACE program RETURN expr RBRACE {
-        add_function($2, fibonacci);
+lines:
+    line
+    | lines line
+    ;
+
+line:
+    print_statement SEMICOLON
+    | assignment SEMICOLON
+    ;
+
+print_statement:
+    PRINT LPAREN expression RPAREN { printf("%d\n", $3); }
+    | PRINT LPAREN RPAREN          { printf("\n"); }
+    ;
+
+assignment:
+    IDENTIFIER '=' expression {
+        set_var_value($1, $3);
+        free($1);  // Liberar la memoria del identificador
     }
-    | identifier LPAREN expr RPAREN EOL { printf("Resultado: %d\n", call_function($1, $3)); }
     ;
 
-expr:
-    NUMBER
-    | expr PLUS expr { $$ = $1 + $3; }
-    | expr MINUS expr { $$ = $1 - $3; }
-    | expr TIMES expr { $$ = $1 * $3; }
-    | expr DIVIDE expr { $$ = $1 / $3; }
-    | LPAREN expr RPAREN { $$ = $2; }
-    | identifier LPAREN expr RPAREN { $$ = call_function($1, $3); }
-    ;
-
-identifier:
-    IDENTIFIER { $$ = $1; }
+expression:
+    NUMBER                        { $$ = $1; }
+    | IDENTIFIER                  { $$ = get_var_value($1); }
+    | expression PLUS expression  { $$ = $1 + $3; }
+    | expression MINUS expression { $$ = $1 - $3; }
+    | expression MULT expression  { $$ = $1 * $3; }
+    | expression DIV expression   { $$ = $1 / $3; }
+    | LPAREN expression RPAREN    { $$ = $2; }
     ;
 
 %%
 
 void yyerror(const char *s) {
     fprintf(stderr, "Error: %s\n", s);
+}
+
+int main() {
+printf(" --------------------------------------\n");
+    printf("|   Bienvenido al Papu Compilador     |\n");
+    printf("| Hecho por los Papus para los Papus  |\n");
+    printf(" --------------------------------------\n");
+
+    char filename[1024];
+    printf("Ingrese el nombre del archivo de entrada (ejemplo: input.papu): ");
+    fgets(filename, sizeof(filename), stdin);
+    filename[strcspn(filename, "\n")] = 0;  // Remover el salto de línea al final del nombre del archivo
+
+    FILE *file = fopen(filename, "r");
+    if (!file) {
+        perror("Error al abrir el archivo");
+        return 1;
+    }
+
+    extern FILE *yyin;
+    yyin = file;
+
+    if (!yyparse()) {
+        printf("Parsing completed successfully.\n");
+    } else {
+        printf("Parsing failed.\n");
+    }
+
+    fclose(file);
+
+    return 0;
+}
+
+int get_var_value(const char *name) {
+    for (int i = 0; i < num_vars; i++) {
+        if (strcmp(vars[i].name, name) == 0) {
+            return vars[i].value;
+        }
+    }
+    fprintf(stderr, "Error: Variable '%s' not found\n", name);
+    exit(EXIT_FAILURE);
+}
+
+void set_var_value(const char *name, int value) {
+    for (int i = 0; i < num_vars; i++) {
+        if (strcmp(vars[i].name, name) == 0) {
+            vars[i].value = value;
+            return;
+        }
+    }
+    if (num_vars < MAX_VARS) {
+        vars[num_vars].name = strdup(name);
+        vars[num_vars].value = value;
+        num_vars++;
+    } else {
+        fprintf(stderr, "Error: Too many variables\n");
+        exit(EXIT_FAILURE);
+    }
 }
