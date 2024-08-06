@@ -6,21 +6,25 @@
 %}
 
 %%
-"//".*                        { /* Ignorar comentarios de una sola línea */ }
-[0-9]+                        { yylval.num = atoi(yytext); return NUMBER; }
-"+"                           { return PLUS; }
-"-"                           { return MINUS; }
-"*"                           { return MULT; }
-"/"                           { return DIV; }
-"("                           { return LPAREN; }
-")"                           { return RPAREN; }
-";"                           { return SEMICOLON; }
-"print"                       { return PRINT; }
-"="                           { return '='; } // Add this line to handle the '=' character
-[a-zA-Z_][a-zA-Z0-9_]*        { yylval.str = strdup(yytext); return IDENTIFIER; }
-[ \t\n]+                      { /* Ignorar espacios en blanco y nuevas líneas */ }
-.                             { printf("Unexpected character: %s\n", yytext); }
-
+"//".*                  { /* Ignorar comentarios de una sola línea */ }
+[0-9]+                  { yylval.num = atoi(yytext); return NUMBER; }
+"true"                  { yylval.num = 1; return BOOLEAN; }
+"false"                 { yylval.num = 0; return BOOLEAN; }
+"print"                 { return PRINT; }
+"&&"                    { return AND; }
+"||"                    { return OR; }
+"!"                     { return NOT; }
+"="                     { return ASSIGN; }
+"("                     { return LPAREN; }
+")"                     { return RPAREN; }
+";"                     { return SEMICOLON; }
+"+"                     { return PLUS; }
+"-"                     { return MINUS; }
+"*"                     { return MULT; }
+"/"                     { return DIV; }
+[a-zA-Z_][a-zA-Z0-9_]*  { yylval.str = strdup(yytext); return IDENTIFIER; }
+[ \t\n]+                { /* Ignorar espacios en blanco */ }
+.                       { printf("Carácter inesperado: %s\n", yytext); exit(1); }
 %%
 
 int yywrap() {

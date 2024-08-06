@@ -1,0 +1,8 @@
+x = true;
+y = false;
+print(x);
+print(y);
+print(x && y);
+print(x || y);
+print(!x);
+print(!y);
