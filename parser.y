@@ -47,6 +47,7 @@ int execute_block;
 %token <str> IDENTIFIER
 %token AND OR NOT
 %token ASSIGN
+%token EQ LE GE LT GT NE
 %type <exp> expression
 
 %left OR
@@ -54,6 +55,9 @@ int execute_block;
 %right NOT
 %left PLUS MINUS
 %left MULT DIV
+%left EQ NE
+%left LT GT LE GE
+
 
 %%
 
@@ -159,7 +163,32 @@ expression:
         $$.value = !$2.value;
         $$.is_boolean = 1;
     }
+    | expression EQ expression {
+        $$.value = $1.value == $3.value;
+        $$.is_boolean = 1;
+    }
+    | expression NE expression {
+        $$.value = $1.value != $3.value;
+        $$.is_boolean = 1;
+    }
+    | expression LT expression {
+        $$.value = $1.value < $3.value;
+        $$.is_boolean = 1;
+    }
+    | expression LE expression {
+        $$.value = $1.value <= $3.value;
+        $$.is_boolean = 1;
+    }
+    | expression GT expression {
+        $$.value = $1.value > $3.value;
+        $$.is_boolean = 1;
+    }
+    | expression GE expression {
+        $$.value = $1.value >= $3.value;
+        $$.is_boolean = 1;
+    }
     ;
+
 
 %%
 

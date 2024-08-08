@@ -1,8 +1,16 @@
 x = true;
 y = false;
+z = 5;
+
 if (x && y) {
     print(x);
 }
 if (x || y) {
     print(y);
+}
+if (z < 3) {
+    print(z);
+}
+if (z <= 5) {
+    print(z);
 }
