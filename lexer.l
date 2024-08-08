@@ -3,6 +3,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+// Declaraciones necesarias para los buffers de Flex
+YY_BUFFER_STATE yy_scan_string(const char *str);
+void yypush_buffer_state(YY_BUFFER_STATE new_buffer);
+void yypop_buffer_state(void);
+void yy_delete_buffer(YY_BUFFER_STATE buffer);
+void yy_switch_to_buffer(YY_BUFFER_STATE new_buffer);
+
 %}
 
 %%
@@ -11,12 +19,15 @@
 "true"                  { yylval.num = 1; return BOOLEAN; }
 "false"                 { yylval.num = 0; return BOOLEAN; }
 "print"                 { return PRINT; }
+"if"                    { return IF; }
 "&&"                    { return AND; }
 "||"                    { return OR; }
 "!"                     { return NOT; }
 "="                     { return ASSIGN; }
 "("                     { return LPAREN; }
 ")"                     { return RPAREN; }
+"{"                     { return LBRACE; }
+"}"                     { return RBRACE; }
 ";"                     { return SEMICOLON; }
 "+"                     { return PLUS; }
 "-"                     { return MINUS; }

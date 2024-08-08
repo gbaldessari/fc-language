@@ -1,8 +1,8 @@
-x = 10;
-y = 20;
-
-if (x < y) {
+x = true;
+y = false;
+if (x && y) {
     print(x);
-} else {
+}
+if (x || y) {
     print(y);
 }

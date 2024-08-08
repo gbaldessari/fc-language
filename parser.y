@@ -6,7 +6,6 @@
 void yyerror(const char *s);
 int yylex();
 
-// Estructura para almacenar variables
 typedef struct {
     char *name;
     int value;
@@ -17,22 +16,18 @@ typedef struct {
 variable vars[MAX_VARS];
 int num_vars = 0;
 
-// Funciones para manejar variables
 variable get_var(const char *name);
 void set_var_value(const char *name, int value, int is_boolean);
 
-// Función para imprimir valores
 void print_value(int value, int is_boolean) {
     if (is_boolean) {
-        if (value) {
-            printf("true\n");
-        } else {
-            printf("false\n");
-        }
+        printf(value ? "true\n" : "false\n");
     } else {
         printf("%d\n", value);
     }
 }
+
+int execute_block;
 
 %}
 
@@ -47,8 +42,8 @@ void print_value(int value, int is_boolean) {
 
 %token <num> NUMBER BOOLEAN
 %token PLUS MINUS MULT DIV
-%token LPAREN RPAREN SEMICOLON
-%token PRINT
+%token LPAREN RPAREN SEMICOLON LBRACE RBRACE
+%token PRINT IF
 %token <str> IDENTIFIER
 %token AND OR NOT
 %token ASSIGN
@@ -74,21 +69,42 @@ lines:
 line:
     print_statement SEMICOLON
     | assignment SEMICOLON
+    | if_statement
     ;
 
 print_statement:
     PRINT LPAREN expression RPAREN {
-        print_value($3.value, $3.is_boolean);
+        if (execute_block) {
+            print_value($3.value, $3.is_boolean);
+        }
     }
     | PRINT LPAREN RPAREN {
-        printf("\n");
+        if (execute_block) {
+            printf("\n");
+        }
     }
     ;
 
 assignment:
     IDENTIFIER ASSIGN expression {
-        set_var_value($1, $3.value, $3.is_boolean);
-        free($1);  // Liberar la memoria del identificador
+        if (execute_block) {
+            set_var_value($1, $3.value, $3.is_boolean);
+            free($1);
+        }
+    }
+    ;
+
+if_statement:
+    IF LPAREN expression RPAREN LBRACE {
+        if ($3.value) {
+            printf("Evaluación del if: verdadero\n");
+            execute_block = 1;
+        } else {
+            printf("Evaluación del if: falso\n");
+            execute_block = 0;
+        }
+    } lines RBRACE {
+        execute_block = 1; // Restaurar ejecución del bloque después del if
     }
     ;
 
@@ -105,6 +121,7 @@ expression:
         variable var = get_var($1);
         $$.value = var.value;
         $$.is_boolean = var.is_boolean;
+        free($1);
     }
     | expression PLUS expression {
         $$.value = $1.value + $3.value;
@@ -119,6 +136,10 @@ expression:
         $$.is_boolean = 0;
     }
     | expression DIV expression {
+        if ($3.value == 0) {
+            yyerror("Error: División por cero");
+            YYABORT;
+        }
         $$.value = $1.value / $3.value;
         $$.is_boolean = 0;
     }
@@ -147,7 +168,35 @@ void yyerror(const char *s) {
 }
 
 int main() {
-    yyparse();
+    printf(" --------------------------------------\n");
+    printf("|   Bienvenido al Papu Compilador     |\n");
+    printf("| Hecho por los Papus para los Papus  |\n");
+    printf(" --------------------------------------\n");
+
+    char filename[1024];
+    printf("Ingrese el nombre del archivo de entrada (ejemplo: input.papu): ");
+    fgets(filename, sizeof(filename), stdin);
+    filename[strcspn(filename, "\n")] = 0;
+
+    FILE *file = fopen(filename, "r");
+    if (!file) {
+        perror("Error al abrir el archivo");
+        return 1;
+    }
+
+    extern FILE *yyin;
+    yyin = file;
+
+    execute_block = 1; // Inicialmente permitir la ejecución del bloque
+
+    if (!yyparse()) {
+        printf("Parsing completed successfully.\n");
+    } else {
+        printf("Parsing failed.\n");
+    }
+
+    fclose(file);
+
     return 0;
 }
 
