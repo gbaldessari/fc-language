@@ -11,6 +11,9 @@ if (x || y) {
 if (z < 3) {
     print(z);
 }
-if (z <= 5) {
+if (z <= 7) {
     print(z);
+}
+if (z == 5) {
+    print(z+1);
 }

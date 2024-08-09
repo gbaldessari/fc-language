@@ -101,10 +101,8 @@ assignment:
 if_statement:
     IF LPAREN expression RPAREN LBRACE {
         if ($3.value) {
-            printf("Evaluación del if: verdadero\n");
             execute_block = 1;
         } else {
-            printf("Evaluación del if: falso\n");
             execute_block = 0;
         }
     } lines RBRACE {
