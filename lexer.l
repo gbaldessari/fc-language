@@ -11,6 +11,7 @@ void yypop_buffer_state(void);
 void yy_delete_buffer(YY_BUFFER_STATE buffer);
 void yy_switch_to_buffer(YY_BUFFER_STATE new_buffer);
 
+// Reglas de Flex
 %}
 
 %%
@@ -20,6 +21,7 @@ void yy_switch_to_buffer(YY_BUFFER_STATE new_buffer);
 "false"                 { yylval.num = 0; return BOOLEAN; }
 "print"                 { return PRINT; }
 "if"                    { return IF; }
+"while"                 { return WHILE; }
 "&&"                    { return AND; }
 "||"                    { return OR; }
 "!"                     { return NOT; }

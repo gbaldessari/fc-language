@@ -1,4 +1,5 @@
 %{
+#include "parser.tab.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,8 +29,8 @@ void print_value(int value, int is_boolean) {
 }
 
 int execute_block;
-
 %}
+
 
 %union {
     int num;
@@ -43,7 +44,7 @@ int execute_block;
 %token <num> NUMBER BOOLEAN
 %token PLUS MINUS MULT DIV
 %token LPAREN RPAREN SEMICOLON LBRACE RBRACE
-%token PRINT IF
+%token PRINT IF WHILE
 %token <str> IDENTIFIER
 %token AND OR NOT
 %token ASSIGN
@@ -57,7 +58,6 @@ int execute_block;
 %left MULT DIV
 %left EQ NE
 %left LT GT LE GE
-
 
 %%
 
@@ -74,6 +74,7 @@ line:
     print_statement SEMICOLON
     | assignment SEMICOLON
     | if_statement
+    | while_statement
     ;
 
 print_statement:
@@ -107,6 +108,34 @@ if_statement:
         }
     } lines RBRACE {
         execute_block = 1; // Restaurar ejecución del bloque después del if
+    }
+    ;
+
+while_statement:
+    WHILE LPAREN expression RPAREN LBRACE {
+        if ($3.value) {
+            execute_block = 1;
+        } else {
+            execute_block = 0;
+        }
+    } lines RBRACE {
+        while ($3.value) {
+            execute_block = 1;
+            // Almacenar el bloque de código en una cadena
+            char *code_block = strdup(yytext);
+            // Re-escanear la cadena
+            YY_BUFFER_STATE buffer = yy_scan_string(code_block);
+            yyparse();
+            yy_delete_buffer(buffer);
+            free(code_block);
+            // Re-evaluar la condición del while
+            if ($3.value) {
+                execute_block = 1;
+            } else {
+                execute_block = 0;
+            }
+        }
+        execute_block = 1;
     }
     ;
 
@@ -186,7 +215,6 @@ expression:
         $$.is_boolean = 1;
     }
     ;
-
 
 %%
 
