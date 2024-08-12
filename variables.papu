@@ -5,3 +5,6 @@ print(x + y);
 print(x - y);
 print(x * y);
 print(x / y);
+
+x = x+6;
+print(x);

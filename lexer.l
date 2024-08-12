@@ -20,6 +20,7 @@ void yy_switch_to_buffer(YY_BUFFER_STATE new_buffer);
 "false"                 { yylval.num = 0; return BOOLEAN; }
 "print"                 { return PRINT; }
 "if"                    { return IF; }
+"while"                 { return WHILE; }
 "&&"                    { return AND; }
 "||"                    { return OR; }
 "!"                     { return NOT; }

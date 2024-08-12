@@ -43,12 +43,13 @@ int execute_block;
 %token <num> NUMBER BOOLEAN
 %token PLUS MINUS MULT DIV
 %token LPAREN RPAREN SEMICOLON LBRACE RBRACE
-%token PRINT IF
+%token PRINT IF WHILE
 %token <str> IDENTIFIER
 %token AND OR NOT
 %token ASSIGN
 %token EQ LE GE LT GT NE
 %type <exp> expression
+%type <exp> lines while_statement
 
 %left OR
 %left AND
@@ -58,7 +59,6 @@ int execute_block;
 %left EQ NE
 %left LT GT LE GE
 
-
 %%
 
 program:
@@ -66,14 +66,15 @@ program:
     ;
 
 lines:
-    line
-    | lines line
+    line { /* No acumulamos nada en $$ */ }
+    | lines line { /* No acumulamos nada en $$ */ }
     ;
 
 line:
     print_statement SEMICOLON
     | assignment SEMICOLON
     | if_statement
+    | while_statement
     ;
 
 print_statement:
@@ -110,6 +111,29 @@ if_statement:
     }
     ;
 
+
+while_statement:
+    WHILE LPAREN expression RPAREN LBRACE lines RBRACE {
+        int condition = $3.value;
+        while (condition) {
+            execute_block = 1;
+            variable x_var = get_var("x");  // Obtenemos el valor de x
+            printf("Antes de ejecutar bloque: x = %d\n", x_var.value);
+
+            // Ejecutar las líneas del bloque
+            if (!execute_block) break;
+
+            // Actualizamos el valor de x
+            x_var.value = x_var.value + 1;
+            set_var_value("x", x_var.value, 0);  // Guardamos el valor actualizado de x
+
+            // Re-evaluar la condición del while
+            condition = get_var("x").value < 5; // Re-evaluamos la condición
+            printf("Después de reevaluar condición: x = %d, condition = %d\n", get_var("x").value, condition);
+        }
+        execute_block = 1; // Restaurar ejecución del bloque después del while
+    }
+    ;
 expression:
     NUMBER {
         $$.value = $1;
@@ -187,7 +211,6 @@ expression:
     }
     ;
 
-
 %%
 
 void yyerror(const char *s) {
@@ -254,4 +277,9 @@ void set_var_value(const char *name, int value, int is_boolean) {
         fprintf(stderr, "Error: Too many variables\n");
         exit(EXIT_FAILURE);
     }
+}
+
+int evaluate_expression() {
+    // Implementa la lógica necesaria para re-evaluar la expresión
+    return 1; // Este es un valor temporal para evitar errores de compilación
 }

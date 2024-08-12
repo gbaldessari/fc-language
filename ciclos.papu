@@ -1,0 +1,9 @@
+x = 0;
+
+while (x < 5) {
+    print(x);  // Esto debería imprimir los valores de 0 a 4
+    x = x + 1;
+}
+
+print(x);  // Esto imprimirá 5 al final
+
