@@ -3,10 +3,12 @@ y = false;
 z = 5;
 
 if (x && y) {
-    print(x);
+    print("x && y");
+} else {
+    print("else");
 }
 if (x || y) {
-    print(y);
+    print("x || y");
 }
 if (z < 3) {
     print(z);

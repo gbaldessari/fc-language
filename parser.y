@@ -15,14 +15,12 @@ typedef struct {
     int is_string;
 } variable;
 
-
 #define MAX_VARS 100
 variable vars[MAX_VARS];
 int num_vars = 0;
 
 variable get_var(const char *name);
 void set_var_value(const char *name, int value, int is_boolean, const char *str_value, int is_string);
-
 
 void print_value(int value, int is_boolean, const char *str_value, int is_string) {
     if (is_string) {
@@ -34,10 +32,9 @@ void print_value(int value, int is_boolean, const char *str_value, int is_string
     }
 }
 
-
-int execute_block;
+int execute_block = 1;
+int last_condition = 0;
 %}
-
 
 %union {
     int num;
@@ -53,7 +50,8 @@ int execute_block;
 %token <num> NUMBER BOOLEAN
 %token PLUS MINUS MULT DIV
 %token LPAREN RPAREN SEMICOLON LBRACE RBRACE
-%token PRINT IF
+%token PRINT IF ELSE
+%nonassoc ELSE
 %token <str> IDENTIFIER
 %token <str> STRING
 %token AND OR NOT
@@ -116,13 +114,19 @@ assignment:
 
 if_statement:
     IF LPAREN expression RPAREN LBRACE {
-        if ($3.value) {
-            execute_block = 1;
-        } else {
-            execute_block = 0;
-        }
+        last_condition = $3.value;
+        execute_block = last_condition;
     } lines RBRACE {
-        execute_block = 1; // Restaurar ejecución del bloque después del if
+        execute_block = 1; // Restore execution after block
+    }
+    if_else_statement
+    ;
+
+if_else_statement:
+    | ELSE LBRACE {
+        execute_block = !last_condition;
+    } lines RBRACE {
+        execute_block = 1; // Restore execution after else block
     }
     ;
 
@@ -248,7 +252,7 @@ int main() {
     extern FILE *yyin;
     yyin = file;
 
-    execute_block = 1; // Inicialmente permitir la ejecución del bloque
+    execute_block = 1;
 
     if (!yyparse()) {
         printf("Parsing completed successfully.\n");

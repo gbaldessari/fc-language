@@ -13,6 +13,7 @@
 "false"                 { yylval.num = 0; return BOOLEAN; }
 "print"                 { return PRINT; }
 "if"                    { return IF; }
+"else"                  { return ELSE; }
 "&&"                    { return AND; }
 "||"                    { return OR; }
 "!"                     { return NOT; }
