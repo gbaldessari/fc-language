@@ -17,15 +17,32 @@ print(100 / 5);
 print(200 / 10);
 print(100 / 5 / 2);
 
-print(1 + 2 * 3);
-print((1 + 2) * 3);
-print(10 - 3 + 2);
-print((10 - 3) * 2);
-print(10 / 2 + 3);
 print(10 / (2 + 3));
 print(2 * (3 + 5) - 10); // comentario
 print((10 + 2) / 3 * 4);
 
-print();
 print(500);
 print((100+50)/(50-25*(2+(1+1))));
+
+x = 20;
+y = 20;
+print(x);
+print(x + y);
+print(x - y);
+print(x * y);
+print(x / y);
+
+w = true;
+z = false;
+print(w);
+print(z);
+print(w && z);
+print(w || z);
+print(!w);
+print(!z);
+
+v = "string";
+
+print(v);
+print("otro string");
+print();
