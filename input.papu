@@ -1,48 +1,70 @@
-print(1 + 2);print(5 + 10);print(100 + 200);
-print(3 + 3 + 3);
+papu(1 + 2):vpapu(5 + 10):vpapu(100 + 200):v
+papu(3 + 3 + 3):v
 
 // Comentario de una sola línea
-print(10 - 5);
-print(100 - 50);
-print(200 - 100);
-print(10 - 5 - 2);
+papu(10 - 5):v
+papu(100 - 50):v
+papu(200 - 100):v
+papu(10 - 5 - 2):v
 
-print(2 * 3);
-print(5 * 5);
-print(10 * 10);
-print(2 * 3 * 4);
+papu(2 * 3):v
+papu(5 * 5):v
+papu(10 * 10):v
+papu(2 * 3 * 4):v
 
-print(10 / 2);
-print(100 / 5);
-print(200 / 10);
-print(100 / 5 / 2);
+papu(10 / 2):v
+papu(100 / 5):v
+papu(200 / 10):v
+papu(100 / 5 / 2):v
 
-print(10 / (2 + 3));
-print(2 * (3 + 5) - 10); // comentario
-print((10 + 2) / 3 * 4);
+papu(10 / (2 + 3)):v
+papu(2 * (3 + 5) - 10):v // comentario
+papu((10 + 2) / 3 * 4):v
 
-print(500);
-print((100+50)/(50-25*(2+(1+1))));
+papu(500):v
+papu((100+50)/(50-25*(2+(1+1)))):v
 
-x = 20;
-y = 20;
-print(x);
-print(x + y);
-print(x - y);
-print(x * y);
-print(x / y);
+x = 20:v
+y = 20:v
+papu(x):v
+papu(x + y):v
+papu(x - y):v
+papu(x * y):v
+papu(x / y):v
 
-w = true;
-z = false;
-print(w);
-print(z);
-print(w && z);
-print(w || z);
-print(!w);
-print(!z);
+w = true:v
+z = false:v
+papu(w):v
+papu(z):v
+papu(w && z):v
+papu(w || z):v
+papu(!w):v
+papu(!z):v
 
-v = "string";
+v = "string":v
 
-print(v);
-print("otro string");
-print();
+papu(v):v
+papu("otro string"):v
+papu():v
+
+a = true:v
+b = false:v
+c = 5:v
+
+when (a && b) {
+    papu("a && b"):v
+} but {
+    papu("but"):v
+}
+when (a || b) {
+    papu("a || b"):v
+}
+when (c < 3) {
+    papu(c):v
+}
+when (c <= 7) {
+    papu(c):v
+}
+when (c == 5) {
+    papu(c+1):v
+}
