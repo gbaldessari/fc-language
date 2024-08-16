@@ -1,6 +1,6 @@
 # Compiler comands
 
-flex lexer.l
+flex lexer.lex
 bison -dv parser.y
 gcc -o App lex.yy.c parser.tab.c
 

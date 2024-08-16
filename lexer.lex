@@ -8,7 +8,7 @@
 %%
 "//".*                  { /* Ignorar comentarios de una sola línea */ }
 [0-9]+                  { yylval.num = atoi(yytext); return NUMBER; }
-\"[^"]*\"               { yylval.str = strdup(yytext); return STRING; }
+\"([^\\\"]|\\.)*\"      { yylval.str = strdup(yytext + 1); yylval.str[strlen(yylval.str) - 1] = '\0'; return STRING; }
 "true"                  { yylval.num = 1; return BOOLEAN; }
 "false"                 { yylval.num = 0; return BOOLEAN; }
 "print"                 { return PRINT; }
@@ -21,8 +21,8 @@
 "="                     { return ASSIGN; }
 "("                     { return LPAREN; }
 ")"                     { return RPAREN; }
-"{" { printf("Token LBRACE encontrado\n"); return LBRACE; }
-"}" { printf("Token RBRACE encontrado\n"); return RBRACE; }
+"{"                     { return LBRACE; }
+"}"                     { return RBRACE; }
 ";"                     { return SEMICOLON; }
 "+"                     { return PLUS; }
 "-"                     { return MINUS; }
