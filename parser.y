@@ -4,6 +4,19 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef YY_BUF_SIZE
+#define YY_BUF_SIZE 16384  // O cualquier tamaño adecuado
+#endif
+
+#ifndef YY_BUFFER_STATE
+#define YY_BUFFER_STATE void *
+#endif
+
+extern YY_BUFFER_STATE yy_create_buffer(FILE *file, int size);
+extern void yy_delete_buffer(YY_BUFFER_STATE buffer);
+extern void yy_switch_to_buffer(YY_BUFFER_STATE new_buffer);
+extern YY_BUFFER_STATE yy_scan_string(char *str);
+
 void yyerror(const char *s);
 int yylex();
 
@@ -50,7 +63,7 @@ int last_condition = 0;
 %token <num> NUMBER BOOLEAN
 %token PLUS MINUS MULT DIV
 %token LPAREN RPAREN SEMICOLON LBRACE RBRACE
-%token PRINT IF ELSE
+%token PRINT IF ELSE WHILE
 %nonassoc ELSE
 %token <str> IDENTIFIER
 %token <str> STRING
@@ -74,14 +87,19 @@ program:
     ;
 
 lines:
-    line
-    | lines line
+    line{
+        printf("Procesando una linea dentro del while\n");
+    }
+    | lines line{
+        printf("Procesando múltiples líneas dentro del while\n");
+    }
     ;
 
 line:
     print_statement SEMICOLON
     | assignment SEMICOLON
     | if_statement
+    | while_statement
     ;
 
 print_statement:
@@ -127,6 +145,62 @@ if_else_statement:
         execute_block = !last_condition;
     } lines RBRACE {
         execute_block = 1; // Restore execution after else block
+    }
+    ;
+
+while_statement:
+    WHILE LPAREN expression RPAREN LBRACE {
+        printf("Evaluando la condicion inicial del while\n");
+        printf("Condicion evaluada: %d\n", $3.value);
+        int condition = $3.value;
+        char* buffer_copy = NULL;
+        size_t buffer_len = 0;
+        int brace_count = 1;
+        int c;
+
+        // Cambia a un buffer nuevo para capturar el contenido del while
+        YY_BUFFER_STATE old_buffer = yy_create_buffer(stdin, YY_BUF_SIZE);
+        yy_switch_to_buffer(old_buffer);
+
+        while (brace_count > 0 && (c = yylex()) != 0) {
+            if (c == LBRACE) brace_count++;
+            if (c == RBRACE) brace_count--;
+            buffer_copy = realloc(buffer_copy, buffer_len + 2);
+            buffer_copy[buffer_len++] = (char)c;
+            buffer_copy[buffer_len] = '\0';
+        }
+
+        yy_switch_to_buffer(old_buffer);
+
+        if (buffer_copy && buffer_copy[0] != '\0') {
+            printf("Codigo capturado:\n%s\n", buffer_copy);
+
+            while (condition) {
+                printf("Ejecutando el cuerpo del while. Condicion actual: %d\n", condition);
+
+                // Escanear y parsear el código capturado
+                YY_BUFFER_STATE new_buffer = yy_scan_string(buffer_copy);
+                yy_switch_to_buffer(new_buffer);
+
+                yyparse();
+
+                yy_switch_to_buffer(old_buffer);
+                yy_delete_buffer(new_buffer);
+
+                // Re-evaluar la condición
+                printf("Reevaluando la condicion del while\n");
+                condition = $3.value; // Aquí deberías volver a evaluar la condición
+            }
+        }
+
+        if (buffer_copy) {
+            free(buffer_copy);
+        }
+
+        execute_block = 1; // Restaurar la ejecución después del bloque
+    }
+    lines RBRACE {
+        printf("Finalizando el bloque while\n");
     }
     ;
 
@@ -233,35 +307,7 @@ void yyerror(const char *s) {
 }
 
 int main() {
-    printf(" --------------------------------------\n");
-    printf("|   Bienvenido al Papu Compilador     |\n");
-    printf("| Hecho por los Papus para los Papus  |\n");
-    printf(" --------------------------------------\n");
-
-    char filename[1024];
-    printf("Ingrese el nombre del archivo de entrada (ejemplo: input.papu): ");
-    fgets(filename, sizeof(filename), stdin);
-    filename[strcspn(filename, "\n")] = 0;
-
-    FILE *file = fopen(filename, "r");
-    if (!file) {
-        perror("Error al abrir el archivo");
-        return 1;
-    }
-
-    extern FILE *yyin;
-    yyin = file;
-
-    execute_block = 1;
-
-    if (!yyparse()) {
-        printf("Parsing completed successfully.\n");
-    } else {
-        printf("Parsing failed.\n");
-    }
-
-    fclose(file);
-
+    yyparse();
     return 0;
 }
 

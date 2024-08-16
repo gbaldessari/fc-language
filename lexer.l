@@ -14,14 +14,15 @@
 "print"                 { return PRINT; }
 "if"                    { return IF; }
 "else"                  { return ELSE; }
+"while"                 { return WHILE; }
 "&&"                    { return AND; }
 "||"                    { return OR; }
 "!"                     { return NOT; }
 "="                     { return ASSIGN; }
 "("                     { return LPAREN; }
 ")"                     { return RPAREN; }
-"{"                     { return LBRACE; }
-"}"                     { return RBRACE; }
+"{" { printf("Token LBRACE encontrado\n"); return LBRACE; }
+"}" { printf("Token RBRACE encontrado\n"); return RBRACE; }
 ";"                     { return SEMICOLON; }
 "+"                     { return PLUS; }
 "-"                     { return MINUS; }

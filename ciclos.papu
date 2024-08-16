@@ -1,5 +1,5 @@
-x = 0;               // Asignar valor inicial a x
-while (x < 5) {      // Iniciar un ciclo while que se ejecuta mientras x < 5
-    print(x);        // Imprimir el valor actual de x
-    x = x + 1;       // Incrementar el valor de x en 1
+x = 0;
+while (x < 3) {
+    print(x);
+    x = x + 1;
 }
