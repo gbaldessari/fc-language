@@ -63,7 +63,7 @@ when (c < 3) {
     papuPrint(c):v
 }
 when (c <= 7) {
-    papuPrint(c):v
+    papuPrint(c+3):v
 }
 when (c == 5) {
     papuPrint(c+1):v
