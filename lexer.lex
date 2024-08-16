@@ -11,10 +11,10 @@
 \"([^\\\"]|\\.)*\"      { yylval.str = strdup(yytext + 1); yylval.str[strlen(yylval.str) - 1] = '\0'; return STRING; }
 "true"                  { yylval.num = 1; return BOOLEAN; }
 "false"                 { yylval.num = 0; return BOOLEAN; }
-"papu"                 { return PRINT; }
+"papuPrint"             { return PRINT; }
 "when"                  { return IF; }
 "but"                   { return ELSE; }
-"while"                 { return WHILE; }
+"repoio"                { return WHILE; }
 "&&"                    { return AND; }
 "||"                    { return OR; }
 "!"                     { return NOT; }
