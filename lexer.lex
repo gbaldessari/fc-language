@@ -7,6 +7,7 @@
 
 %%
 "//".*                  { /* Ignorar comentarios de una sola línea */ }
+[0-9]+\.[0-9]+          { yylval.flt = atof(yytext); return FLOAT; }
 [0-9]+                  { yylval.num = atoi(yytext); return NUMBER; }
 \"([^\\\"]|\\.)*\"      { yylval.str = strdup(yytext + 1); yylval.str[strlen(yylval.str) - 1] = '\0'; return STRING; }
 "true"                  { yylval.num = 1; return BOOLEAN; }
@@ -14,7 +15,7 @@
 "papuPrint"             { return PRINT; }
 "when"                  { return IF; }
 "but"                   { return ELSE; }
-"repoio"                { return WHILE; }
+"while"                { return WHILE; }
 "&&"                    { return AND; }
 "||"                    { return OR; }
 "!"                     { return NOT; }

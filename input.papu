@@ -1,70 +1,89 @@
-papu(1 + 2):vpapu(5 + 10):vpapu(100 + 200):v
-papu(3 + 3 + 3):v
+papuPrint(1 + 2):vpapuPrint(5 + 10):vpapuPrint(100 + 200):v
+papuPrint(3 + 3 + 3):v
 
 // Comentario de una sola línea
-papu(10 - 5):v
-papu(100 - 50):v
-papu(200 - 100):v
-papu(10 - 5 - 2):v
+papuPrint(10 - 5):v
+papuPrint(100 - 50):v
+papuPrint(200 - 100):v
+papuPrint(10 - 5 - 2):v
 
-papu(2 * 3):v
-papu(5 * 5):v
-papu(10 * 10):v
-papu(2 * 3 * 4):v
+papuPrint(2 * 3):v
+papuPrint(5 * 5):v
+papuPrint(10 * 10):v
+papuPrint(2 * 3 * 4):v
 
-papu(10 / 2):v
-papu(100 / 5):v
-papu(200 / 10):v
-papu(100 / 5 / 2):v
+papuPrint(10 / 2):v
+papuPrint(100 / 5):v
+papuPrint(200 / 10):v
+papuPrint(100 / 5 / 2):v
 
-papu(10 / (2 + 3)):v
-papu(2 * (3 + 5) - 10):v // comentario
-papu((10 + 2) / 3 * 4):v
+papuPrint(10 / (2 + 3)):v
+papuPrint(2 * (3 + 5) - 10):v // comentario
+papuPrint((10 + 2) / 3 * 4):v
 
-papu(500):v
-papu((100+50)/(50-25*(2+(1+1)))):v
+papuPrint(500):v
+papuPrint((100+50)/(50-25*(2+(1+1)))):v
 
 x = 20:v
 y = 20:v
-papu(x):v
-papu(x + y):v
-papu(x - y):v
-papu(x * y):v
-papu(x / y):v
+papuPrint(x):v
+papuPrint(x + y):v
+papuPrint(x - y):v
+papuPrint(x * y):v
+papuPrint(x / y):v
 
 w = true:v
 z = false:v
-papu(w):v
-papu(z):v
-papu(w && z):v
-papu(w || z):v
-papu(!w):v
-papu(!z):v
+papuPrint(w):v
+papuPrint(z):v
+papuPrint(w && z):v
+papuPrint(w || z):v
+papuPrint(!w):v
+papuPrint(!z):v
 
 v = "string":v
 
-papu(v):v
-papu("otro string"):v
-papu():v
+papuPrint(v):v
+papuPrint("otro string"):v
+papuPrint():v
 
 a = true:v
 b = false:v
 c = 5:v
 
 when (a && b) {
-    papu("a && b"):v
+    papuPrint("a && b"):v
 } but {
-    papu("but"):v
+    papuPrint("when haces tus momos en tu compilador"):v
 }
 when (a || b) {
-    papu("a || b"):v
+    papuPrint("but te reprueban el ramo :'v"):v
 }
 when (c < 3) {
-    papu(c):v
+    papuPrint(c):v
 }
 when (c <= 7) {
-    papu(c):v
+    papuPrint(c):v
 }
 when (c == 5) {
-    papu(c+1):v
+    papuPrint(c+1):v
 }
+
+// Ejemplo de programa
+floatVar = 5.5:v
+intVar = 10:v
+strVar = "Hola, ":v
+boolVar = true:v
+
+resultadoSuma = floatVar + intVar:v  // Operación con float y int
+resultadoResta = intVar - 2:v
+resultadoConcat = strVar + "mundo!":v
+resultadoMultiplicacion = floatVar * 2.0:v
+resultadoDivision = intVar / floatVar:v
+
+papuPrint(resultadoSuma):v         // Imprime 15.5
+papuPrint(resultadoResta):v        // Imprime 8
+papuPrint(resultadoConcat):v       // Imprime "Hola, mundo!"
+papuPrint(resultadoMultiplicacion):v // Imprime 11.0
+papuPrint(resultadoDivision):v     // Imprime 1.81818181818
+papuPrint(boolVar):v               // Imprime true
