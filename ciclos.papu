@@ -1,8 +1,0 @@
-x = 0;
-print("Loop Start");
-while (x < 3) {
-    print("Inside Loop");
-    print(x);
-    x = x + 1;
-}
-print("Loop End");
