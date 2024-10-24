@@ -1,4 +1,4 @@
-# Compiler comands
+# Comands
 
 flex lexer.lex
 bison -dv parser.y
