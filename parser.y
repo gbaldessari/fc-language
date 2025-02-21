@@ -13,8 +13,8 @@ typedef struct {
     int is_boolean;
     char *str_value;
     int is_string;
-    float float_value; // Nuevo campo para valores float
-    int is_float; // Indica si es un float
+    float float_value;
+    int is_float;
 } variable;
 
 
@@ -128,7 +128,7 @@ if_statement:
         last_condition = $3.value;
         execute_block = last_condition;
     } lines RBRACE {
-        execute_block = 1; // Restore execution after block
+        execute_block = 1;
     }
     if_else_statement
     ;
@@ -137,7 +137,7 @@ if_else_statement:
     | ELSE LBRACE {
         execute_block = !last_condition;
     } lines RBRACE {
-        execute_block = 1; // Restore execution after else block
+        execute_block = 1;
     }
     ;
 
