@@ -1,11 +1,18 @@
-# Comands
+# Lenguaje de programación básico
+Lenguaje de programación básico para la asignatura Fundamentos de la Computación
 
+# Consola
+Common: 
+```
 flex lexer.lex
 bison -dv parser.y
 gcc -o App lex.yy.c parser.tab.c
-
-pwsh:
-    Get-Content input.ps | ./App
-
+```
+Powershell:
+```
+Get-Content input.ps | ./App 
+```
 bash:
-    ./App < input.ps
+```
+./App < input.ps
+```
