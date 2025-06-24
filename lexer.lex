@@ -12,10 +12,10 @@
 \"([^\\\"]|\\.)*\"      { yylval.str = strdup(yytext + 1); yylval.str[strlen(yylval.str) - 1] = '\0'; return STRING; }
 "true"                  { yylval.num = 1; return BOOLEAN; }
 "false"                 { yylval.num = 0; return BOOLEAN; }
-"print"                 { return PRINT; }
-"if"                    { return IF; }
-"else"                  { return ELSE; }
-"while"                 { return WHILE; }
+"papuPrint"             { return PRINT; }
+"when"                  { return IF; }
+"but"                   { return ELSE; }
+"while"                { return WHILE; }
 "&&"                    { return AND; }
 "||"                    { return OR; }
 "!"                     { return NOT; }
@@ -24,7 +24,7 @@
 ")"                     { return RPAREN; }
 "{"                     { return LBRACE; }
 "}"                     { return RBRACE; }
-";"                     { return SEMICOLON; }
+":v"                    { return SEMICOLON; }
 "+"                     { return PLUS; }
 "-"                     { return MINUS; }
 "*"                     { return MULT; }

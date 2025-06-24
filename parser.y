@@ -4,38 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef enum { 
-    AST_PROGRAM, AST_LINES, AST_PRINT, AST_ASSIGN, AST_IF, AST_IFELSE, AST_WHILE, AST_EXPR 
-} ASTNodeType;
-
-typedef struct ASTNode {
-    ASTNodeType type;
-    struct ASTNode *left;
-    struct ASTNode *right;
-    struct ASTNode *cond;
-    struct ASTNode *then_block;
-    struct ASTNode *else_block;
-    struct ASTNode *body;
-    char *id;
-    struct {
-        int value;
-        int is_boolean;
-        char *str_value;
-        int is_string;
-        float float_value;
-        int is_float;
-    } exp;
-} ASTNode;
-
-ASTNode *ast_program(ASTNode *lines);
-ASTNode *ast_lines(ASTNode *left, ASTNode *right);
-ASTNode *ast_print(ASTNode *expr);
-ASTNode *ast_assign(char *id, ASTNode *expr);
-ASTNode *ast_if(ASTNode *cond, ASTNode *then_block, ASTNode *else_block);
-ASTNode *ast_while(ASTNode *cond, ASTNode *body);
-ASTNode *ast_expr(int value, int is_boolean, char *str_value, int is_string, float float_value, int is_float);
-void eval(ASTNode *node);
-
 void yyerror(const char *s);
 int yylex();
 
@@ -78,7 +46,14 @@ int last_condition = 0;
     int num;
     float flt;
     char *str;
-    struct ASTNode *node;
+    struct {
+        int value;
+        int is_boolean;
+        char *str_value;
+        int is_string;
+        float float_value;
+        int is_float;
+    } exp;
 }
 
 %token <str> IDENTIFIER
@@ -92,14 +67,7 @@ int last_condition = 0;
 %token AND OR NOT
 %token ASSIGN
 %token EQ LE GE LT GT NE
-%type <node> expression
-%type <node> lines
-%type <node> line
-%type <node> print_statement
-%type <node> assignment
-%type <node> if_statement
-%type <node> if_else_statement
-%type <node> while_statement
+%type <exp> expression
 
 %left OR
 %left AND
@@ -112,178 +80,279 @@ int last_condition = 0;
 %%
 
 program:
-    lines { eval(ast_program($1)); }
+    lines
     ;
 
 lines:
-    line { $$ = $1; }
-    | lines line { $$ = ast_lines($1, $2); }
+    line
+    | lines line
     ;
 
 line:
-    print_statement SEMICOLON { $$ = $1; }
-    | assignment SEMICOLON { $$ = $1; }
-    | if_statement { $$ = $1; }
-    | while_statement { $$ = $1; }
+    print_statement SEMICOLON
+    | assignment SEMICOLON
+    | if_statement
+    | while_statement
     ;
 
 print_statement:
-    PRINT LPAREN expression RPAREN { $$ = ast_print($3); }
-    | PRINT LPAREN RPAREN { $$ = ast_print(NULL); }
+    PRINT LPAREN expression RPAREN {
+        if (execute_block) {
+            print_value($3.value, $3.is_boolean, $3.str_value, $3.is_string, $3.float_value, $3.is_float);
+        }
+        if ($3.str_value) {
+            free($3.str_value);
+        }
+    }
+    | PRINT LPAREN RPAREN {
+        if (execute_block) {
+            printf("\n");
+        }
+    }
     ;
 
 assignment:
-    IDENTIFIER ASSIGN expression { $$ = ast_assign($1, $3); }
+    IDENTIFIER ASSIGN expression {
+        if (execute_block) {
+            set_var_value($1, $3.value, $3.is_boolean, $3.str_value, $3.is_string, $3.float_value, $3.is_float);
+            free($1);
+            if ($3.str_value) {
+                free($3.str_value);
+            }
+        }
+    }
     ;
 
 if_statement:
-    IF LPAREN expression RPAREN LBRACE lines RBRACE if_else_statement
-    {
-        $$ = ast_if(ast_expr($3->exp.value, $3->exp.is_boolean, $3->exp.str_value, $3->exp.is_string, $3->exp.float_value, $3->exp.is_float), $6, $8);
+    IF LPAREN expression RPAREN LBRACE {
+        last_condition = $3.value;
+        execute_block = last_condition;
+    } lines RBRACE {
+        execute_block = 1;
     }
+    if_else_statement
     ;
 
 if_else_statement:
-    /* vacío */ { $$ = NULL; }
-    | ELSE LBRACE lines RBRACE { $$ = $3; }
+    | ELSE LBRACE {
+        execute_block = !last_condition;
+    } lines RBRACE {
+        execute_block = 1;
+    }
     ;
 
 while_statement:
-    WHILE LPAREN expression RPAREN LBRACE lines RBRACE
-    {
-        $$ = ast_while(ast_expr($3->exp.value, $3->exp.is_boolean, $3->exp.str_value, $3->exp.is_string, $3->exp.float_value, $3->exp.is_float), $6);
-    }
+    WHILE LPAREN expression RPAREN LBRACE lines RBRACE 
     ;
 
 expression:
-    NUMBER { $$ = ast_expr($1, 0, NULL, 0, 0.0, 0); }
-    | FLOAT { $$ = ast_expr(0, 0, NULL, 0, $1, 1); }
-    | BOOLEAN { $$ = ast_expr($1, 1, NULL, 0, 0.0, 0); }
-    | STRING { $$ = ast_expr(0, 0, $1, 1, 0.0, 0); }
+    NUMBER {
+        $$.value = $1;
+        $$.is_boolean = 0;
+        $$.is_string = 0;
+        $$.is_float = 0;
+    }
+    | FLOAT {
+        $$.float_value = $1;
+        $$.is_float = 1;
+        $$.is_boolean = 0;
+        $$.is_string = 0;
+    }
+    | BOOLEAN {
+        $$.value = $1;
+        $$.is_boolean = 1;
+        $$.is_string = 0;
+        $$.is_float = 0;
+    }
+    | STRING {
+        $$.str_value = strdup($1);
+        $$.is_string = 1;
+        $$.is_boolean = 0;
+        $$.is_float = 0;
+    }
     | IDENTIFIER {
         variable var = get_var($1);
-        $$ = ast_expr(var.value, var.is_boolean, var.str_value ? strdup(var.str_value) : NULL, var.is_string, var.float_value, var.is_float);
+        $$.value = var.value;
+        $$.is_boolean = var.is_boolean;
+        $$.str_value = var.str_value ? strdup(var.str_value) : NULL;
+        $$.is_string = var.is_string;
+        $$.float_value = var.float_value;
+        $$.is_float = var.is_float;
         free($1);
     }
     | expression PLUS expression {
-        if ($1->exp.is_float || $3->exp.is_float) {
-            $$ = ast_expr(0, 0, NULL, 0, 
-                ($1->exp.is_float ? $1->exp.float_value : $1->exp.value) +
-                ($3->exp.is_float ? $3->exp.float_value : $3->exp.value), 1);
-        } else if ($1->exp.is_string || $3->exp.is_string) {
-            char *s1 = $1->exp.str_value ? $1->exp.str_value : "";
-            char *s2 = $3->exp.str_value ? $3->exp.str_value : "";
-            char *combined = malloc(strlen(s1) + strlen(s2) + 1);
-            strcpy(combined, s1);
-            strcat(combined, s2);
-            $$ = ast_expr(0, 0, combined, 1, 0.0, 0);
+        if ($1.is_float || $3.is_float) {
+            $$.float_value = ($1.is_float ? $1.float_value : $1.value) +
+                             ($3.is_float ? $3.float_value : $3.value);
+            $$.is_float = 1;
+            $$.is_string = 0;
+            $$.is_boolean = 0;
+        } else if ($1.is_string || $3.is_string) {
+            char *combined = malloc(strlen($1.str_value ? $1.str_value : "") + strlen($3.str_value ? $3.str_value : "") + 1);
+            strcpy(combined, $1.str_value ? $1.str_value : "");
+            strcat(combined, $3.str_value ? $3.str_value : "");
+            $$.str_value = combined;
+            $$.is_string = 1;
+            $$.is_boolean = 0;
+            $$.is_float = 0;
         } else {
-            $$ = ast_expr($1->exp.value + $3->exp.value, 0, NULL, 0, 0.0, 0);
+            $$.value = $1.value + $3.value;
+            $$.is_string = 0;
+            $$.is_boolean = 0;
+            $$.is_float = 0;
         }
     }
     | expression MINUS expression {
-        if ($1->exp.is_float || $3->exp.is_float) {
-            $$ = ast_expr(0, 0, NULL, 0, 
-                ($1->exp.is_float ? $1->exp.float_value : $1->exp.value) -
-                ($3->exp.is_float ? $3->exp.float_value : $3->exp.value), 1);
+        if ($1.is_float || $3.is_float) {
+            $$.float_value = ($1.is_float ? $1.float_value : $1.value) -
+                             ($3.is_float ? $3.float_value : $3.value);
+            $$.is_float = 1;
+            $$.is_string = 0;
+            $$.is_boolean = 0;
         } else {
-            $$ = ast_expr($1->exp.value - $3->exp.value, 0, NULL, 0, 0.0, 0);
+            $$.value = $1.value - $3.value;
+            $$.is_string = 0;
+            $$.is_boolean = 0;
+            $$.is_float = 0;
         }
     }
     | expression MULT expression {
-        if ($1->exp.is_float || $3->exp.is_float) {
-            $$ = ast_expr(0, 0, NULL, 0, 
-                ($1->exp.is_float ? $1->exp.float_value : $1->exp.value) *
-                ($3->exp.is_float ? $3->exp.float_value : $3->exp.value), 1);
+        if ($1.is_float || $3.is_float) {
+            $$.float_value = ($1.is_float ? $1.float_value : $1.value) *
+                             ($3.is_float ? $3.float_value : $3.value);
+            $$.is_float = 1;
+            $$.is_string = 0;
+            $$.is_boolean = 0;
         } else {
-            $$ = ast_expr($1->exp.value * $3->exp.value, 0, NULL, 0, 0.0, 0);
+            $$.value = $1.value * $3.value;
+            $$.is_string = 0;
+            $$.is_boolean = 0;
+            $$.is_float = 0;
         }
     }
     | expression DIV expression {
-        float divisor = $3->exp.is_float ? $3->exp.float_value : $3->exp.value;
-        if (divisor == 0) {
+        if (($3.is_float && $3.float_value == 0.0) || (!$3.is_float && $3.value == 0)) {
             yyerror("Error: División por cero");
             YYABORT;
         }
-        if ($1->exp.is_float || $3->exp.is_float) {
-            $$ = ast_expr(0, 0, NULL, 0, 
-                ($1->exp.is_float ? $1->exp.float_value : $1->exp.value) /
-                divisor, 1);
+        if ($1.is_float || $3.is_float) {
+            $$.float_value = ($1.is_float ? $1.float_value : $1.value) /
+                             ($3.is_float ? $3.float_value : $3.value);
+            $$.is_float = 1;
+            $$.is_string = 0;
+            $$.is_boolean = 0;
         } else {
-            $$ = ast_expr($1->exp.value / $3->exp.value, 0, NULL, 0, 0.0, 0);
+            $$.value = $1.value / $3.value;
+            $$.is_string = 0;
+            $$.is_boolean = 0;
+            $$.is_float = 0;
         }
     }
-    | LPAREN expression RPAREN { $$ = $2; }
+    | LPAREN expression RPAREN {
+        $$.value = $2.value;
+        $$.is_boolean = $2.is_boolean;
+        $$.str_value = $2.str_value;
+        $$.is_string = $2.is_string;
+        $$.float_value = $2.float_value;
+        $$.is_float = $2.is_float;
+    }
     | expression AND expression {
-        $$ = ast_expr($1->exp.value && $3->exp.value, 1, NULL, 0, 0.0, 0);
+        $$.value = $1.value && $3.value;
+        $$.is_boolean = 1;
+        $$.is_string = 0;
+        $$.is_float = 0;
     }
     | expression OR expression {
-        $$ = ast_expr($1->exp.value || $3->exp.value, 1, NULL, 0, 0.0, 0);
+        $$.value = $1.value || $3.value;
+        $$.is_boolean = 1;
+        $$.is_string = 0;
+        $$.is_float = 0;
     }
     | NOT expression {
-        $$ = ast_expr(!$2->exp.value, 1, NULL, 0, 0.0, 0);
+        $$.value = !$2.value;
+        $$.is_boolean = 1;
+        $$.is_string = 0;
+        $$.is_float = 0;
     }
     | expression EQ expression {
-        int result;
-        if ($1->exp.is_float || $3->exp.is_float) {
-            result = (($1->exp.is_float ? $1->exp.float_value : $1->exp.value) == 
-                      ($3->exp.is_float ? $3->exp.float_value : $3->exp.value));
+        if ($1.is_float || $3.is_float) {
+            $$.value = ($1.is_float ? $1.float_value : $1.value) == ($3.is_float ? $3.float_value : $3.value);
+            $$.is_boolean = 1;
+            $$.is_string = 0;
+            $$.is_float = 0;
         } else {
-            result = ($1->exp.value == $3->exp.value);
+            $$.value = $1.value == $3.value;
+            $$.is_boolean = 1;
+            $$.is_string = 0;
+            $$.is_float = 0;
         }
-        $$ = ast_expr(result, 1, NULL, 0, 0.0, 0);
     }
     | expression NE expression {
-        int result;
-        if ($1->exp.is_float || $3->exp.is_float) {
-            result = (($1->exp.is_float ? $1->exp.float_value : $1->exp.value) != 
-                      ($3->exp.is_float ? $3->exp.float_value : $3->exp.value));
+        if ($1.is_float || $3.is_float) {
+            $$.value = ($1.is_float ? $1.float_value : $1.value) != ($3.is_float ? $3.float_value : $3.value);
+            $$.is_boolean = 1;
+            $$.is_string = 0;
+            $$.is_float = 0;
         } else {
-            result = ($1->exp.value != $3->exp.value);
+            $$.value = $1.value != $3.value;
+            $$.is_boolean = 1;
+            $$.is_string = 0;
+            $$.is_float = 0;
         }
-        $$ = ast_expr(result, 1, NULL, 0, 0.0, 0);
     }
     | expression LT expression {
-        int result;
-        if ($1->exp.is_float || $3->exp.is_float) {
-            result = (($1->exp.is_float ? $1->exp.float_value : $1->exp.value) < 
-                      ($3->exp.is_float ? $3->exp.float_value : $3->exp.value));
+        if ($1.is_float || $3.is_float) {
+            $$.value = ($1.is_float ? $1.float_value : $1.value) < ($3.is_float ? $3.float_value : $3.value);
+            $$.is_boolean = 1;
+            $$.is_string = 0;
+            $$.is_float = 0;
         } else {
-            result = ($1->exp.value < $3->exp.value);
+            $$.value = $1.value < $3.value;
+            $$.is_boolean = 1;
+            $$.is_string = 0;
+            $$.is_float = 0;
         }
-        $$ = ast_expr(result, 1, NULL, 0, 0.0, 0);
     }
     | expression LE expression {
-        int result;
-        if ($1->exp.is_float || $3->exp.is_float) {
-            result = (($1->exp.is_float ? $1->exp.float_value : $1->exp.value) <= 
-                      ($3->exp.is_float ? $3->exp.float_value : $3->exp.value));
+        if ($1.is_float || $3.is_float) {
+            $$.value = ($1.is_float ? $1.float_value : $1.value) <= ($3.is_float ? $3.float_value : $3.value);
+            $$.is_boolean = 1;
+            $$.is_string = 0;
+            $$.is_float = 0;
         } else {
-            result = ($1->exp.value <= $3->exp.value);
+            $$.value = $1.value <= $3.value;
+            $$.is_boolean = 1;
+            $$.is_string = 0;
+            $$.is_float = 0;
         }
-        $$ = ast_expr(result, 1, NULL, 0, 0.0, 0);
     }
     | expression GT expression {
-        int result;
-        if ($1->exp.is_float || $3->exp.is_float) {
-            result = (($1->exp.is_float ? $1->exp.float_value : $1->exp.value) > 
-                      ($3->exp.is_float ? $3->exp.float_value : $3->exp.value));
+        if ($1.is_float || $3.is_float) {
+            $$.value = ($1.is_float ? $1.float_value : $1.value) > ($3.is_float ? $3.float_value : $3.value);
+            $$.is_boolean = 1;
+            $$.is_string = 0;
+            $$.is_float = 0;
         } else {
-            result = ($1->exp.value > $3->exp.value);
+            $$.value = $1.value > $3.value;
+            $$.is_boolean = 1;
+            $$.is_string = 0;
+            $$.is_float = 0;
         }
-        $$ = ast_expr(result, 1, NULL, 0, 0.0, 0);
     }
     | expression GE expression {
-        int result;
-        if ($1->exp.is_float || $3->exp.is_float) {
-            result = (($1->exp.is_float ? $1->exp.float_value : $1->exp.value) >= 
-                      ($3->exp.is_float ? $3->exp.float_value : $3->exp.value));
+        if ($1.is_float || $3.is_float) {
+            $$.value = ($1.is_float ? $1.float_value : $1.value) >= ($3.is_float ? $3.float_value : $3.value);
+            $$.is_boolean = 1;
+            $$.is_string = 0;
+            $$.is_float = 0;
         } else {
-            result = ($1->exp.value >= $3->exp.value);
+            $$.value = $1.value >= $3.value;
+            $$.is_boolean = 1;
+            $$.is_string = 0;
+            $$.is_float = 0;
         }
-        $$ = ast_expr(result, 1, NULL, 0, 0.0, 0);
     }
-;
+    ;
 
 
 %%
@@ -334,102 +403,5 @@ void set_var_value(const char *name, int value, int is_boolean, const char *str_
     } else {
         fprintf(stderr, "Error: Too many variables\n");
         exit(EXIT_FAILURE);
-    }
-}
-
-ASTNode *ast_program(ASTNode *lines) {
-    ASTNode *node = malloc(sizeof(ASTNode));
-    node->type = AST_PROGRAM;
-    node->left = lines;
-    return node;
-}
-
-ASTNode *ast_lines(ASTNode *left, ASTNode *right) {
-    ASTNode *node = malloc(sizeof(ASTNode));
-    node->type = AST_LINES;
-    node->left = left;
-    node->right = right;
-    return node;
-}
-
-ASTNode *ast_print(ASTNode *expr) {
-    ASTNode *node = malloc(sizeof(ASTNode));
-    node->type = AST_PRINT;
-    node->left = expr;
-    return node;
-}
-
-ASTNode *ast_assign(char *id, ASTNode *expr) {
-    ASTNode *node = malloc(sizeof(ASTNode));
-    node->type = AST_ASSIGN;
-    node->id = id;
-    node->left = expr;
-    return node;
-}
-
-ASTNode *ast_if(ASTNode *cond, ASTNode *then_block, ASTNode *else_block) {
-    ASTNode *node = malloc(sizeof(ASTNode));
-    node->type = AST_IF;
-    node->cond = cond;
-    node->then_block = then_block;
-    node->else_block = else_block;
-    return node;
-}
-
-ASTNode *ast_while(ASTNode *cond, ASTNode *body) {
-    ASTNode *node = malloc(sizeof(ASTNode));
-    node->type = AST_WHILE;
-    node->cond = cond;
-    node->body = body;
-    return node;
-}
-
-ASTNode *ast_expr(int value, int is_boolean, char *str_value, int is_string, float float_value, int is_float) {
-    ASTNode *node = malloc(sizeof(ASTNode));
-    node->type = AST_EXPR;
-    node->exp.value = value;
-    node->exp.is_boolean = is_boolean;
-    node->exp.str_value = str_value ? strdup(str_value) : NULL;
-    node->exp.is_string = is_string;
-    node->exp.float_value = float_value;
-    node->exp.is_float = is_float;
-    return node;
-}
-
-// Evaluador del AST
-void eval(ASTNode *node) {
-    if (!node) return;
-    switch (node->type) {
-        case AST_PROGRAM:
-            eval(node->left);
-            break;
-        case AST_LINES:
-            eval(node->left);
-            eval(node->right);
-            break;
-        case AST_PRINT:
-            if (node->left)
-                print_value(node->left->exp.value, node->left->exp.is_boolean, node->left->exp.str_value, node->left->exp.is_string, node->left->exp.float_value, node->left->exp.is_float);
-            else
-                printf("\n");
-            break;
-        case AST_ASSIGN:
-            set_var_value(node->id, node->left->exp.value, node->left->exp.is_boolean, node->left->exp.str_value, node->left->exp.is_string, node->left->exp.float_value, node->left->exp.is_float);
-            break;
-        case AST_IF:
-            if (node->cond->exp.value)
-                eval(node->then_block);
-            else if (node->else_block)
-                eval(node->else_block);
-            break;
-        case AST_WHILE:
-            while (node->cond->exp.value) {
-                eval(node->body);
-                // Re-evaluar la condición (deberías reconstruir el nodo de condición si depende de variables)
-            }
-            break;
-        case AST_EXPR:
-            // Nada que hacer
-            break;
     }
 }
