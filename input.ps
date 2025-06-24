@@ -1,89 +1,89 @@
-papuPrint(1 + 2):vpapuPrint(5 + 10):vpapuPrint(100 + 200):v
-papuPrint(3 + 3 + 3):v
+print(1 + 2);print(5 + 10);print(100 + 200);
+print(3 + 3 + 3);
 
 // Comentario de una sola línea
-papuPrint(10 - 5):v
-papuPrint(100 - 50):v
-papuPrint(200 - 100):v
-papuPrint(10 - 5 - 2):v
+print(10 - 5);
+print(100 - 50);
+print(200 - 100);
+print(10 - 5 - 2);
 
-papuPrint(2 * 3):v
-papuPrint(5 * 5):v
-papuPrint(10 * 10):v
-papuPrint(2 * 3 * 4):v
+print(2 * 3);
+print(5 * 5);
+print(10 * 10);
+print(2 * 3 * 4);
 
-papuPrint(10 / 2):v
-papuPrint(100 / 5):v
-papuPrint(200 / 10):v
-papuPrint(100 / 5 / 2):v
+print(10 / 2);
+print(100 / 5);
+print(200 / 10);
+print(100 / 5 / 2);
 
-papuPrint(10 / (2 + 3)):v
-papuPrint(2 * (3 + 5) - 10):v // comentario
-papuPrint((10 + 2) / 3 * 4):v
+print(10 / (2 + 3));
+print(2 * (3 + 5) - 10); // comentario
+print((10 + 2) / 3 * 4);
 
-papuPrint(500):v
-papuPrint((100+50)/(50-25*(2+(1+1)))):v
+print(500);
+print((100+50)/(50-25*(2+(1+1))));
 
-x = 20:v
-y = 20:v
-papuPrint(x):v
-papuPrint(x + y):v
-papuPrint(x - y):v
-papuPrint(x * y):v
-papuPrint(x / y):v
+x = 20;
+y = 20;
+print(x);
+print(x + y);
+print(x - y);
+print(x * y);
+print(x / y);
 
-w = true:v
-z = false:v
-papuPrint(w):v
-papuPrint(z):v
-papuPrint(w && z):v
-papuPrint(w || z):v
-papuPrint(!w):v
-papuPrint(!z):v
+w = true;
+z = false;
+print(w);
+print(z);
+print(w && z);
+print(w || z);
+print(!w);
+print(!z);
 
-v = "string":v
+v = "string";
 
-papuPrint(v):v
-papuPrint("otro string"):v
-papuPrint():v
+print(v);
+print("otro string");
+print();
 
-a = true:v
-b = false:v
-c = 5:v
+a = true;
+b = false;
+c = 5;
 
-when (a && b) {
-    papuPrint("a && b"):v
-} but {
-    papuPrint("when haces tus momos en tu compilador"):v
+if (a && b) {
+    print("a && b");
+} else {
+    print("when haces tus momos en tu compilador");
 }
-when (a || b) {
-    papuPrint("but te reprueban el ramo :'v"):v
+if (a || b) {
+    print("but te reprueban el ramo :'v");
 }
-when (c < 3) {
-    papuPrint(c):v
+if (c < 3) {
+    print(c);
 }
-when (c <= 7) {
-    papuPrint(c+3):v
+if (c <= 7) {
+    print(c+3);
 }
-when (c == 5) {
-    papuPrint(c+1):v
+if (c == 5) {
+    print(c+1);
 }
 
 // Ejemplo de programa
-floatVar = 5.5:v
-intVar = 10:v
-strVar = "Hola, ":v
-boolVar = true:v
+floatVar = 5.5;
+intVar = 10;
+strVar = "Hola, ";
+boolVar = true;
 
-resultadoSuma = floatVar + intVar:v  // Operación con float y int
-resultadoResta = intVar - 2:v
-resultadoConcat = strVar + "mundo!":v
-resultadoMultiplicacion = floatVar * 2.0:v
-resultadoDivision = intVar / floatVar:v
+resultadoSuma = floatVar + intVar;  // Operación con float y int
+resultadoResta = intVar - 2;
+resultadoConcat = strVar + "mundo!";
+resultadoMultiplicacion = floatVar * 2.0;
+resultadoDivision = intVar / floatVar;
 
-papuPrint(resultadoSuma):v         // Imprime 15.5
-papuPrint(resultadoResta):v        // Imprime 8
-papuPrint(resultadoConcat):v       // Imprime "Hola, mundo!"
-papuPrint(resultadoMultiplicacion):v // Imprime 11.0
-papuPrint(resultadoDivision):v     // Imprime 1.81818181818
-papuPrint(boolVar):v               // Imprime true
+print(resultadoSuma);         // Imprime 15.5
+print(resultadoResta);        // Imprime 8
+print(resultadoConcat);       // Imprime "Hola, mundo!"
+print(resultadoMultiplicacion); // Imprime 11.0
+print(resultadoDivision);     // Imprime 1.81818181818
+print(boolVar);               // Imprime true
